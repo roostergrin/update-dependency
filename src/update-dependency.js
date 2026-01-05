@@ -20,7 +20,11 @@ async function updateRepository(owner, repo) {
         console.log(chalk.yellow(`Skipping ${owner}/${repo}: "${config.dependency.name}" not found.`));
         return;
       }
-      const updatedContent = dependencyManager.updateDependency(packageJson);
+      const updatedContent = dependencyManager.updateDependency(content);
+      if (!updatedContent) {
+        console.log(chalk.gray(`Skipping ${owner}/${repo}: already up to date.`));
+        return;
+      }
       await githubService.updateFile(owner, repo, updatedContent, sha);
     } else {
       // Add mode: skip if dependency already exists, add if not

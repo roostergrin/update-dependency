@@ -42,6 +42,36 @@ class GitHubService {
       branch: repoData.default_branch,
     });
   }
+
+  async getOrgRepos(org) {
+    const repos = [];
+    let page = 1;
+    while (true) {
+      const { data } = await this.octokit.repos.listForOrg({
+        org,
+        per_page: 100,
+        page,
+        sort: 'updated',
+      });
+      if (data.length === 0) break;
+      repos.push(...data.map(r => ({ owner: r.owner.login, repo: r.name })));
+      page++;
+    }
+    return repos;
+  }
+
+  async hasFile(owner, repo, filePath) {
+    try {
+      await this.octokit.repos.getContent({
+        owner,
+        repo,
+        path: filePath,
+      });
+      return true;
+    } catch (error) {
+      return false;
+    }
+  }
 }
 
 module.exports = new GitHubService(); 
