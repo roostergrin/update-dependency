@@ -11,15 +11,26 @@ async function updateRepository(owner, repo) {
     const { content, sha } = await githubService.getPackageJson(owner, repo);
     const packageJson = JSON.parse(content);
 
-    // Skip if dependency already exists
-    if (dependencyManager.hasDependency(packageJson)) {
-      console.log(chalk.yellow(`Skipping ${owner}/${repo}: "${config.dependency.name}" already exists.`));
-      return;
-    }
+    const mode = config.dependency.mode || 'add';
+    const hasDep = dependencyManager.hasDependency(packageJson);
 
-    // Add the dependency and update the file
-    const updatedContent = dependencyManager.addDependency(packageJson);
-    await githubService.updateFile(owner, repo, updatedContent, sha);
+    if (mode === 'update') {
+      // Update mode: skip if dependency doesn't exist, update if it does
+      if (!hasDep) {
+        console.log(chalk.yellow(`Skipping ${owner}/${repo}: "${config.dependency.name}" not found.`));
+        return;
+      }
+      const updatedContent = dependencyManager.updateDependency(packageJson);
+      await githubService.updateFile(owner, repo, updatedContent, sha);
+    } else {
+      // Add mode: skip if dependency already exists, add if not
+      if (hasDep) {
+        console.log(chalk.yellow(`Skipping ${owner}/${repo}: "${config.dependency.name}" already exists.`));
+        return;
+      }
+      const updatedContent = dependencyManager.addDependency(packageJson);
+      await githubService.updateFile(owner, repo, updatedContent, sha);
+    }
 
     console.log(chalk.green(`✅ Updated ${owner}/${repo} successfully.`));
   } catch (error) {

@@ -8,8 +8,10 @@ const config = {
     mainBranch: 'main',
   },
   dependency: {
-    name: 'node-fetch-native',
-    version: '1.6.4',
+    name: 'gsap',
+    version: '^3.11.3',
+    oldVersion: 'npm:@gsap/shockingly@^3.11.3',  // Only update if this value matches (optional)
+    mode: 'update',  // 'add' or 'update'
   },
   filePath: 'package.json',
   repositories: repos,
